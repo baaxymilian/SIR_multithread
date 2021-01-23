@@ -89,4 +89,6 @@ auto sir::Population::updateRange(int begin, int end) -> Population{
 }
 
 
-
+auto sir::Population::getCell(int id) -> Cell{
+	return this->cells[id];
+}

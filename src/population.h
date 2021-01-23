@@ -22,6 +22,7 @@ namespace sir
 			auto updateSingle(int) -> Cell;
 			auto changeCells(std::vector<int>) -> void;
 			auto print() -> void;
+			auto getCell(int) -> Cell;
 			Population(const int);
 			Population(const Population&);
 
