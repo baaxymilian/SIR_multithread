@@ -8,28 +8,13 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-#include <windows.h>
+#include <GL/glut.h>
+#include "population.h"
 
 namespace sir{
 
-	typedef struct _WNDCLASSEX {
-		UINT cbSize;
-		UINT style;
-		WNDPROC lpfnWndPric; //pointer to window procedure for this window class
-		int cbClsExtra;
-		int cbWndExtra;
-		HINSTANCE hInstance;
-		HICON hIcon;
-		HICON hIconSm;
-		HCURSOR hCursor;
-		HBRUSH hbrBackground; //the background brush for this window class
-		LPCSTR lpszMenuName;
-		LPCSTR lpszClassName;
-	} WNDCLASSEX;
-
-
-
-
+	auto displayWindow() -> void;
+	auto updateWindow(int, Population&) -> void;
 }
 
 #endif /* DISPLAY_H_ */
