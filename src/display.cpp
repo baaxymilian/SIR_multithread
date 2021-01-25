@@ -6,16 +6,16 @@
  */
 
 #include "display.h"
+#include <iostream>
 
-auto sir::displayWindow() -> void{
-	glutInitWindowSize(800, 600);
+auto sir::displayWindow(const char* name, int width,int height) -> void{
 
-    glutCreateWindow("GLUT Test");
+	glutInitWindowSize(width, height);
 
-    glClearColor(0.8f, 0.8f, 0.8f, 0.8f);
+    glutCreateWindow(name);
+    glClearColor(0.7f, 0.7f, 0.7f, 0.7f);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     glutSwapBuffers();
 }
 
@@ -37,13 +37,13 @@ auto sir::updateWindow(int size, Population &pop) -> void{
     	cell = pop.getCell(i);
     	switch(cell.getState()){
 		case sir::susceptible:
-			glColor3f(0.0f, 0.1f, 1.0f);
+			glColor3f(0.0f, 0.1f, 0.7f);
 			break;
 		case sir::infectous:
-			glColor3f(1.0f, 0.1f, 0.0f);
+			glColor3f(0.9f, 0.2f, 0.0f);
 			break;
 		case sir::recovered:
-			glColor3f(0.0f, 0.8f, 0.0f);
+			glColor3f(0.0f, 0.6f, 0.0f);
             break;
 		default:
 			break;
@@ -60,8 +60,7 @@ auto sir::updateWindow(int size, Population &pop) -> void{
         }
 
     }
-
-
+    glFlush();
     glutSwapBuffers();
-
 }
+

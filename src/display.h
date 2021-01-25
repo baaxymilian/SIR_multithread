@@ -13,8 +13,9 @@
 
 namespace sir{
 
-	auto displayWindow() -> void;
+	auto displayWindow(const char*, int, int) -> void;
 	auto updateWindow(int, Population&) -> void;
+
 }
 
 #endif /* DISPLAY_H_ */

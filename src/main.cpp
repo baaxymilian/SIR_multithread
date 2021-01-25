@@ -9,88 +9,118 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 
-#define NUMBER_OF_THREADS 1
-#define SIZE 20
+#define NUMBER_OF_THREADS 4
+#define SIZE 40
 
-static volatile int threadN;
-static volatile int sum;
-static volatile bool endFlag;
+static volatile int threadN = 0;
+static volatile bool startFlag;
+static int rows = SIZE / NUMBER_OF_THREADS;
+
 
 sir::Population pop(SIZE);
 
-const COLORREF rgbRed   =  0x000000FF;
-const COLORREF rgbGreen =  0x0000FF00;
-const COLORREF rgbBlue  =  0x00FF0000;
+class MyMutex: public osapi::RecursiveMutex {
 
-class ComputeThread : public osapi::Thread {
-public:
-	ComputeThread() : Thread(4, 512, osapi::NOT_JOINABLE) { this->number = threadN; threadN++;}
-	int number;
-private:
-	virtual void body() {
-
-		this->suspend();
-	}
 };
 
-class MainThread : public osapi::Thread {
-public:
-	MainThread() : Thread(2, 512, osapi::NOT_JOINABLE) { ; }
-private:
-	virtual void body() {
-	    sir::displayWindow();
+MyMutex mut;
 
-	    ComputeThread *c = new ComputeThread[NUMBER_OF_THREADS];
-		for(int i = 0; i < NUMBER_OF_THREADS; i++){
+class ComputeThread : public osapi::MortalThread {
+public:
+	ComputeThread() : MortalThread(3, 512) {
+		this->id = threadN;
+		threadN++;
+		this->startRow = this->id*rows;
+		if((this->id + 1) % NUMBER_OF_THREADS > 0){
+			this->stopRow = (this->id+1)*rows;
+		}else{
+			// Last thread takes additional remainder rows
+			// If number of threads is greater than number of rows, only one thread is works
+			this->stopRow = (this->id+1)*rows + (SIZE % NUMBER_OF_THREADS);
 		}
-		c[0].run();
-	    for(auto i = 0; i < 200; i++){
-	        pop.updateRange(0, SIZE*SIZE - 1);
-	        Sleep(100);
-			sir::updateWindow(SIZE, pop);
-			Sleep(100);
-	    }
+}
+	int id;
+	int startRow;
+	int stopRow;
 
-	    endFlag = true;
+private:
+	virtual void begin(){
+
+			std::cout << "MY SLICE: " << startRow << " " << stopRow << std::endl;
+	}
+
+	virtual void loop() {
+			mut.lock(1000);
+			pop.updateRange(startRow*SIZE, stopRow*SIZE);
+			mut.unlock();
+			this->suspend();
+	}
+
+	virtual void end(){
+
 	}
 };
 
+ComputeThread *c =  new ComputeThread[NUMBER_OF_THREADS];
 
-auto initialize() -> void{
-	std::vector<int> infected_list = {3, 5, 8, 33, 115, 23};
+auto initializeCells() -> void{
+	std::vector<int> infected_list = {13, 35, 88, 101, 115, 140};
 	pop.changeCells(infected_list);
+}
+
+auto idleCallback() -> void{
+	if(startFlag){
+		if(mut.lock(10000)){
+		    mut.unlock();
+			for(auto i = 0; i < NUMBER_OF_THREADS; i++){
+				c[i].resume();
+		    }
+			//Sleep(1000);
+			sir::updateWindow(SIZE, pop);
+		}
+	}
+
+}
+
+auto keyboardCallback(unsigned char key, int x, int y) -> void{
+  switch (key)
+  {
+    /* Exit on escape key press */
+    case '\x1B':
+    {
+      exit(EXIT_SUCCESS);
+      break;
+    }
+    case '\x73':
+    {
+    	if(startFlag == false){
+        	startFlag = true;
+        	for(int i = 0; i < NUMBER_OF_THREADS; i++){
+        		c[i].run();
+        	}
+        	break;
+    	}
+    }
+
+  }
+}
+
+auto displayCallback() -> void
+{
+	//This callback is empty
 }
 
 
 auto main(int argc, char** argv) -> int {
-    // save start time
-    auto startTime = std::chrono::system_clock::now();
-
-
     glutInit(&argc, argv);
+    initializeCells();
 
-    initialize();
+    sir::displayWindow("SIR", 1200, 900);
 
+	glutKeyboardFunc(&keyboardCallback);
+	glutDisplayFunc(&displayCallback);
+	glutIdleFunc(&idleCallback);
+	glutMainLoop();
 
-    // create and run the thread
-    MainThread mThread;
-    mThread.run();
-
-    // wait for the threads to finish
-    while(!endFlag){
-
-    }
-
-
-
-    // save end time
-    auto endTime = std::chrono::system_clock::now();
-
-    // get thread result
-    std::cout << "Found " << sum << " prime numbers." << std::endl;
-
-    // print duration
-    auto duration = endTime - startTime;
-    std::cout << "Duration: " << std::chrono::duration <double, std::milli>(duration).count() << "ms." << std::endl;
     return 0;
 }

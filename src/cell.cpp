@@ -43,19 +43,37 @@ auto sir::Cell::getState() -> State{
 auto sir::Cell::setNeighbors(int size) -> void{
 	// Upper row
 	if(this->id > size){
-		this->neighbors.push_back(this->id -size);
+		// Same column
+		this->neighbors.push_back(this->id - size);
+		// Left column
+		if(this->id > size - 1 && this->id % size != 0){
+			this->neighbors.push_back(this->id - size - 1);
+		}
+		// Right column
+		if(this->id % size != size - 1){
+			this->neighbors.push_back(this->id - size + 1);
+		}
 	}
 	// Same row
-	//LEFT
+	// Left column
 	if(this->id > 0 && this->id % size != 0)
 		this->neighbors.push_back(this->id -1);
-	//RIGHT
+	// Right column
 	if(this->id < size*size && this->id % size != size - 1)
-		this->neighbors.push_back(this->id +1);
+		this->neighbors.push_back(this->id + 1);
 
 	// Lower row
 	if(this->id < size*size - size){
-		this->neighbors.push_back(this->id +size);
+		// Same row
+		this->neighbors.push_back(this->id + size);
+		// Left column
+		if(this->id % size != 0){
+			this->neighbors.push_back(this->id + size - 1);
+		}
+		// Right column
+		if(this->id < size*size - 1 && this->id % size != size - 1){
+			this->neighbors.push_back(this->id + size + 1);
+		}
 	}
 }
 
