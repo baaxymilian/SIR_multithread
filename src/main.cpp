@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 
-#define NUMBER_OF_THREADS 4
-#define SIZE 40
+#define NUMBER_OF_THREADS 1
+#define SIZE 200
 
 static volatile int threadN = 0;
 static volatile bool startFlag;
@@ -50,9 +50,7 @@ private:
 	}
 
 	virtual void loop() {
-			mut.lock(1000);
 			pop.updateRange(startRow*SIZE, stopRow*SIZE);
-			mut.unlock();
 			this->suspend();
 	}
 
@@ -71,11 +69,12 @@ auto initializeCells() -> void{
 auto idleCallback() -> void{
 	if(startFlag){
 		if(mut.lock(10000)){
-		    mut.unlock();
+
 			for(auto i = 0; i < NUMBER_OF_THREADS; i++){
 				c[i].resume();
 		    }
 			//Sleep(1000);
+		    mut.unlock();
 			sir::updateWindow(SIZE, pop);
 		}
 	}
