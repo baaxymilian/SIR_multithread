@@ -3,12 +3,6 @@ compiler: gcc
 dist: trusty
 os: windows
 
-before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get -q update
-  - sudo apt-get -y install gcc-4.8
-
 script: 
   # Build and run this project
-  - make
-  - cppcheck --quiet .
+  - g++ -std=c++17 -O0 -Wall -Wextra -g  -Iinclude -o output\main.exe src/cell.o src/display.o src/main.o src/population.o -lfreeglut -lopengl32 -lglu32 -Llib
