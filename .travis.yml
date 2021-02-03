@@ -16,5 +16,5 @@ install:
 
 script: 
   # Build and run this project
-  - g++ /src/main.cpp /src/cell.cpp /src/population.cpp /src/display.cpp -std=c++17 -fprofile-arcs -ftest-coverage -o sir -lfreeglut -lopengl32 -lglu32
+  - make
   - cppcheck --quiet .
