@@ -3,6 +3,11 @@ compiler: gcc
 dist: trusty
 os: windows
 
+before_install:
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get -q update
+  - sudo apt-get -y install gcc-4.8
+
 script: 
   # Build and run this project
   - make
