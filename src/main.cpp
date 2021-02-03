@@ -1,4 +1,4 @@
-#include "osapi.h"
+#include "osapi/osapi.h"
 #include <iostream>
 #include <cstdint>
 #include <chrono>
@@ -92,6 +92,7 @@ auto keyboardCallback(unsigned char key, int x, int y) -> void{
     }
     case '\x73':
     {
+	/* START on 's' key, but only once */
     	if(startFlag == false){
         	startFlag = true;
         	for(int i = 0; i < NUMBER_OF_THREADS; i++){
@@ -120,6 +121,5 @@ auto main(int argc, char** argv) -> int {
 	glutDisplayFunc(&displayCallback);
 	glutIdleFunc(&idleCallback);
 	glutMainLoop();
-
     return 0;
 }
