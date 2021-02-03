@@ -9,4 +9,4 @@ script:
   - g++ -std=c++17 -O0 -Wall -Wextra -g  -Iinclude -c src/display.cpp  -o src/display.o
   - g++ -std=c++17 -O0 -Wall -Wextra -g  -Iinclude -c src/main.cpp  -o src/main.o
   - g++ -std=c++17 -O0 -Wall -Wextra -g  -Iinclude -c src/population.cpp  -o src/population.o
-  - g++ -std=c++17 -O0 -Wall -Wextra -g  -Iinclude -o output\main.exe src/cell.o src/display.o src/main.o src/population.o -lfreeglut -lopengl32 -lglu32 -Llib
+  - g++ -std=c++17 -O0 -Wall -Wextra -g  -Iinclude -o output\main.exe src/cell.o src/display.o src/main.o src/population.o -lopengl32 -lglu32 -Llib -lfreeglut
