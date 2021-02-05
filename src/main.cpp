@@ -10,34 +10,32 @@
 #include <GL/glut.h>
 
 #define NUMBER_OF_THREADS 2
-#define SIZE 300
+// 2D matrix is SIZE * SIZE
+#define SIZE 500
+
 
 static volatile int threadN = 0;
 static volatile bool slowMode = false;
 static volatile bool startFlag = false;
 static int rows = SIZE / NUMBER_OF_THREADS;
 static int iterations = 1;
-static int total_time = 0;
+static double total_time = 0;
 char text_buff[200];
 
 sir::Population pop(SIZE);
-
-class MyMutex: public osapi::RecursiveMutex {
-
-};
-
-MyMutex mut;
 
 class ComputeThread : public osapi::MortalThread {
 public:
 	ComputeThread() : MortalThread(3, 512) {
 		this->id = threadN;
 		threadN++;
+
+		//assing rows according to thread's id
 		this->startRow = this->id*rows;
 		if((this->id + 1) % NUMBER_OF_THREADS > 0){
 			this->stopRow = (this->id+1)*rows;
 		}else{
-			// Last thread takes additional remainder rows
+			// Last thread takes additional remaining rows
 			// If number of threads is greater than number of rows, only one thread is works
 			this->stopRow = (this->id+1)*rows + (SIZE % NUMBER_OF_THREADS);
 		}
@@ -48,10 +46,11 @@ public:
 
 private:
 	virtual void begin(){
-			std::cout << "MY SLICE: " << startRow << " " << stopRow << std::endl;
+			//std::cout << "MY SLICE: " << startRow << " " << stopRow << std::endl;
 	}
 
 	virtual void loop() {
+			//compute interation and suspend after it is done
 			pop.updateRange(startRow*SIZE, stopRow*SIZE);
 			this->suspend();
 	}
@@ -61,8 +60,11 @@ private:
 	}
 };
 
-ComputeThread *c =  new ComputeThread[NUMBER_OF_THREADS];
+ComputeThread *threads =  new ComputeThread[NUMBER_OF_THREADS];
 
+/*
+	Edit this vector to change input: infected cells
+*/
 auto initializeCells() -> void{
 	std::vector<int> infected_list = {13, 35, 88, 101, 115, 140};
 	pop.changeCells(infected_list);
@@ -75,19 +77,20 @@ auto countAverageTime(double average) ->double{
 
 auto idleCallback() -> void{
 	if(startFlag){
-		if(mut.lock(10000)){
     		auto startTime = std::chrono::system_clock::now();
 			
+			//resume threads to compute new iteration
 			for(auto i = 0; i < NUMBER_OF_THREADS; i++){
-				c[i].resume();
+				threads[i].resume();
 		    }
-		    mut.unlock();
 			sir::updateWindow(SIZE, pop);
 
+			//measure time
 			auto endTime = std::chrono::system_clock::now();
 			auto iteration_duration = std::chrono::duration <double, std::milli>(endTime - startTime).count();
 			auto average_time = countAverageTime(iteration_duration);
 
+			//display info in UI window
 			sprintf(text_buff, "Average computing time: %0.2f ms", average_time);
 			sir::displayText(text_buff, -0.5, 0.9);
 			sprintf(text_buff, "Iterations: %d", iterations);
@@ -95,10 +98,10 @@ auto idleCallback() -> void{
 			sprintf(text_buff, "Number of threads: %d", NUMBER_OF_THREADS);
 			sir::displayText(text_buff, -0.2, -0.9);
 
+			//go to sleep if slow mode enabled
 			iterations++;
 			if(slowMode)
 				Sleep(200);
-		}
 	}
 
 }
@@ -119,7 +122,7 @@ auto keyboardCallback(unsigned char key, int x, int y) -> void{
 			slowMode = true;
         	startFlag = true;
         	for(int i = 0; i < NUMBER_OF_THREADS; i++){
-        		c[i].run();
+        		threads[i].run();
         	}
         	break;
     	}
@@ -131,7 +134,7 @@ auto keyboardCallback(unsigned char key, int x, int y) -> void{
 			slowMode = false;
         	startFlag = true;
         	for(int i = 0; i < NUMBER_OF_THREADS; i++){
-        		c[i].run();
+        		threads[i].run();
         	}
         	break;
     	}
