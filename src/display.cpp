@@ -17,7 +17,8 @@ auto sir::displayWindow(const char* name, int width,int height) -> void{
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	displayText("Press 'S' key to start...", -0.15, 0);
+	displayText("Press 'S' key to start in slow mode.", -0.25, 0.1);
+	displayText("Press 'R' key to start in rapid mode.", -0.25, 0);
 	displayText("Press 'ESC' anytime to close.", -0.2, -0.1);
 
     glutSwapBuffers();

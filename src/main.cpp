@@ -9,13 +9,16 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 
-#define NUMBER_OF_THREADS 1
-#define SIZE 200
+#define NUMBER_OF_THREADS 2
+#define SIZE 300
 
 static volatile int threadN = 0;
-static volatile bool startFlag;
+static volatile bool slowMode = false;
+static volatile bool startFlag = false;
 static int rows = SIZE / NUMBER_OF_THREADS;
-
+static int iterations = 1;
+static int total_time = 0;
+char text_buff[200];
 
 sir::Population pop(SIZE);
 
@@ -45,7 +48,6 @@ public:
 
 private:
 	virtual void begin(){
-
 			std::cout << "MY SLICE: " << startRow << " " << stopRow << std::endl;
 	}
 
@@ -66,17 +68,36 @@ auto initializeCells() -> void{
 	pop.changeCells(infected_list);
 }
 
+auto countAverageTime(double average) ->double{
+	total_time += average;
+	return total_time/iterations;
+}
+
 auto idleCallback() -> void{
 	if(startFlag){
 		if(mut.lock(10000)){
-
+    		auto startTime = std::chrono::system_clock::now();
+			
 			for(auto i = 0; i < NUMBER_OF_THREADS; i++){
 				c[i].resume();
 		    }
-			//Sleep(1000);
 		    mut.unlock();
 			sir::updateWindow(SIZE, pop);
-			sir::displayText("Time elapsed:", -0.2, 0.9);
+
+			auto endTime = std::chrono::system_clock::now();
+			auto iteration_duration = std::chrono::duration <double, std::milli>(endTime - startTime).count();
+			auto average_time = countAverageTime(iteration_duration);
+
+			sprintf(text_buff, "Average computing time: %0.2f ms", average_time);
+			sir::displayText(text_buff, -0.5, 0.9);
+			sprintf(text_buff, "Iterations: %d", iterations);
+			sir::displayText(text_buff, 0.4, 0.9);
+			sprintf(text_buff, "Number of threads: %d", NUMBER_OF_THREADS);
+			sir::displayText(text_buff, -0.2, -0.9);
+
+			iterations++;
+			if(slowMode)
+				Sleep(200);
 		}
 	}
 
@@ -93,8 +114,9 @@ auto keyboardCallback(unsigned char key, int x, int y) -> void{
     }
     case '\x73':
     {
-	/* START on 's' key, but only once */
+	/* START in slow mode pressing 'S' key, but only once */
     	if(startFlag == false){
+			slowMode = true;
         	startFlag = true;
         	for(int i = 0; i < NUMBER_OF_THREADS; i++){
         		c[i].run();
@@ -102,7 +124,18 @@ auto keyboardCallback(unsigned char key, int x, int y) -> void{
         	break;
     	}
     }
-
+    case '\x72':
+    {
+	/* START in rapid mode pressing 'R' key, but only once */
+    	if(startFlag == false){
+			slowMode = false;
+        	startFlag = true;
+        	for(int i = 0; i < NUMBER_OF_THREADS; i++){
+        		c[i].run();
+        	}
+        	break;
+    	}
+    }
   }
 }
 
