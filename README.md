@@ -13,7 +13,7 @@ Recommended way to build this project is via Makefile with yours favourite IDE.
 
 You can also use builder commands provided in .travis.yml file.
 
-If your system does not have freeglut installed, simply put bin/freeglut.dll file in output file after successful build.
+If your system does not have freeglut installed, simply put bin/freeglut.dll file in output folder after successful build.
 
 Check your compiler. You may need to edit Makefile to change lib folder to lib/x64.
 
