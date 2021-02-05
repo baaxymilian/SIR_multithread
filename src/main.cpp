@@ -76,6 +76,7 @@ auto idleCallback() -> void{
 			//Sleep(1000);
 		    mut.unlock();
 			sir::updateWindow(SIZE, pop);
+			sir::displayText("Time elapsed:", -0.2, 0.9);
 		}
 	}
 

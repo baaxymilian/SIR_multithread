@@ -16,6 +16,10 @@ auto sir::displayWindow(const char* name, int width,int height) -> void{
     glClearColor(0.7f, 0.7f, 0.7f, 0.7f);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	displayText("Press 'S' key to start...", -0.15, 0);
+	displayText("Press 'ESC' anytime to close.", -0.2, -0.1);
+
     glutSwapBuffers();
 }
 
@@ -60,7 +64,19 @@ auto sir::updateWindow(int size, Population &pop) -> void{
         }
 
     }
+
     glFlush();
     glutSwapBuffers();
 }
 
+/* displayText
+	Provide text to display on window and x, y position as frame ratio 
+	in window (form -1 to 1), where 0, 0 is window's centre
+*/
+auto sir::displayText(const char* text, double x, double y) -> void{
+	glColor3f(0.1f, 0.1f, 0.1f);
+	glRasterPos2f(x, y);
+
+	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)text);
+	glutSwapBuffers();
+}
